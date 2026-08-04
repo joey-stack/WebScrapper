@@ -7,6 +7,7 @@ executive consultation blueprints, and consultative pitch copy.
 Includes SEO & GEO (Generative Engine Optimization) standards.
 """
 
+import os
 import re
 import urllib.parse
 import pandas as pd
@@ -414,7 +415,7 @@ def generate_service_scope_breakdown(service_needed: str) -> str:
         )
 
 def generate_whatsapp_link(phone_str: str, lead_name: str) -> str:
-    """Generates a direct 1-click WhatsApp chat link with pre-filled consultative message."""
+    """Generates a direct 1-click WhatsApp chat link targeting the lead with your team's direct callback reference."""
     if not phone_str or pd.isna(phone_str):
         return ""
     
@@ -429,8 +430,9 @@ def generate_whatsapp_link(phone_str: str, lead_name: str) -> str:
     else:
         clean_num = "234" + digits
 
+    my_wa = os.getenv("MY_WHATSAPP_NUMBER", "2348183292909").strip()
     clean_name = get_clean_name(lead_name)
-    msg = f"Hello Team {clean_name}, I noticed your organization on Google Maps and wanted to reach out regarding your digital presence."
+    msg = f"Hello Team {clean_name}, I am reaching out from Joel Adawah's team regarding your Google Maps digital presence in Nigeria. You can also connect with us directly on WhatsApp at +{my_wa}."
     encoded_msg = urllib.parse.quote(msg)
     return f"https://wa.me/{clean_num}?text={encoded_msg}"
 
