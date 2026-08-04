@@ -106,6 +106,18 @@ def generate_followup_pitch(lead_name: str, service_needed: str, original_pitch:
     )
     return followup
 
+def generate_breakup_pitch(lead_name: str, service_needed: str) -> str:
+    clean_name = lead_name.split("|")[0].split("-")[0].strip()
+    breakup = (
+        f"Hi Team {clean_name},\n\n"
+        f"I know how busy managing an organization can be, so I won't continue clogging your inbox!\n\n"
+        f"If improving {clean_name}'s Google search rank or web portal becomes a priority down the road, please feel free to reach back out anytime.\n\n"
+        f"Wishing {clean_name} continued growth and success!\n\n"
+        f"Warm regards,\n"
+        f"{os.getenv('SENDER_NAME', 'Joel Adawah')}"
+    )
+    return breakup
+
 def process_email_outreach(csv_path: Path, mode: str, sheet_url: str = None, limit: int = 25, dry_run: bool = False):
     if not csv_path.exists():
         print(f"[-] Error: Leads file not found at {csv_path}")
@@ -131,21 +143,18 @@ def process_email_outreach(csv_path: Path, mode: str, sheet_url: str = None, lim
         if col not in df.columns:
             df[col] = default_val
 
-    df["email"] = df["email"].fillna("").astype(str)
-    valid_leads = df[df["email"].str.contains("@", na=False)].copy()
+    now = datetime.datetime.now()
+    sent_count = 0
+    account_idx = 0
 
     print(f"\n==================================================")
     print(f"[*] Enterprise Anti-Ban Email Outreach Scheduler")
     print(f"[*] Senders Available: {len(accounts)} account(s)")
-    print(f"[*] Mode: {mode.upper()} | Leads with emails: {len(valid_leads)}/{len(df)}")
+    print(f"[*] Mode: {mode.upper()} | Leads with emails: {len(df[df['email'].notna()])}/{len(df)}")
     print(f"==================================================")
 
-    sent_count = 0
-    now = datetime.datetime.now()
-    account_idx = 0
-
     for idx, row in df.iterrows():
-        email_str = str(row.get("email", "")).strip()
+        email_str = str(row.get("email", "") or "").strip()
         if not email_str or "@" not in email_str:
             continue
 
@@ -207,6 +216,8 @@ def process_email_outreach(csv_path: Path, mode: str, sheet_url: str = None, lim
 
         elif mode == "followup" and str(row.get("email_sent_status")) in ["SENT_INITIAL", "DRY_RUN_INITIAL"]:
             due_str = str(row.get("followup_due_at", ""))
+            f_status = str(row.get("followup_status", ""))
+
             is_due = False
             if due_str:
                 try:
@@ -216,42 +227,84 @@ def process_email_outreach(csv_path: Path, mode: str, sheet_url: str = None, lim
                 except Exception:
                     is_due = True
 
-            if is_due and str(row.get("followup_status")) != "SENT_FOLLOWUP_1":
-                subject = f"Re: {generate_email_subject(lead_name, service_needed)}"
-                body = spin_text(generate_followup_pitch(lead_name, service_needed, raw_pitch))
-                sent_time = now.strftime("%Y-%m-%d %H:%M")
+            if is_due:
+                # Follow-Up #1 (Day 3)
+                if f_status in ["SCHEDULED_DAY_3", "NOT_DUE", ""]:
+                    subject = f"Re: {generate_email_subject(lead_name, service_needed)}"
+                    body = spin_text(generate_followup_pitch(lead_name, service_needed, raw_pitch))
+                    sent_time = now.strftime("%Y-%m-%d %H:%M")
+                    next_due = (now + datetime.timedelta(days=4)).strftime("%Y-%m-%d %H:%M")
 
-                current_account = accounts[account_idx % len(accounts)] if accounts else {"email": "dryrun@domain.com"}
-                account_idx += 1
+                    current_account = accounts[account_idx % len(accounts)] if accounts else {"email": "dryrun@domain.com"}
+                    account_idx += 1
 
-                print(f"\n---> [{sent_count+1}/{limit}] Dispatching Follow-up #1:")
-                print(f"     From:     {current_account['email']}")
-                print(f"     To:       {lead_name} <{recipient_email}>")
-                print(f"     Subject:  {subject}")
+                    print(f"\n---> [{sent_count+1}/{limit}] Dispatching Follow-up #1 (Day 3):")
+                    print(f"     From:     {current_account['email']}")
+                    print(f"     To:       {lead_name} <{recipient_email}>")
+                    print(f"     Subject:  {subject}")
 
-                if dry_run:
-                    print("     [DRY RUN - Follow-up not physically sent]")
-                else:
-                    try:
-                        smtp_conn = connect_smtp_account(current_account)
-                        msg = MIMEMultipart()
-                        msg["From"] = f"{os.getenv('SENDER_NAME', 'Joel Adawah')} <{current_account['email']}>"
-                        msg["To"] = recipient_email
-                        msg["Subject"] = subject
-                        msg.attach(MIMEText(body, "plain"))
-                        smtp_conn.send_message(msg)
-                        smtp_conn.quit()
+                    if dry_run:
+                        print("     [DRY RUN - Follow-up #1 not physically sent]")
+                    else:
+                        try:
+                            smtp_conn = connect_smtp_account(current_account)
+                            msg = MIMEMultipart()
+                            msg["From"] = f"{os.getenv('SENDER_NAME', 'Joel Adawah')} <{current_account['email']}>"
+                            msg["To"] = recipient_email
+                            msg["Subject"] = subject
+                            msg.attach(MIMEText(body, "plain"))
+                            smtp_conn.send_message(msg)
+                            smtp_conn.quit()
 
-                        delay = random.randint(15, 35)
-                        print(f"     [+] Success! Pausing {delay}s for humanized rate limiting...")
-                        time.sleep(delay)
-                    except Exception as send_err:
-                        print(f"     [-] Failed to send via {current_account['email']}: {send_err}")
-                        continue
+                            delay = random.randint(15, 35)
+                            print(f"     [+] Success! Pausing {delay}s for humanized rate limiting...")
+                            time.sleep(delay)
+                        except Exception as send_err:
+                            print(f"     [-] Failed to send via {current_account['email']}: {send_err}")
+                            continue
 
-                df.at[idx, "followup_status"] = "SENT_FOLLOWUP_1" if not dry_run else "DRY_RUN_FOLLOWUP"
-                df.at[idx, "followup_sent_at"] = sent_time
-                sent_count += 1
+                    df.at[idx, "followup_status"] = "SENT_FOLLOWUP_1" if not dry_run else "DRY_RUN_FOLLOWUP_1"
+                    df.at[idx, "followup_sent_at"] = sent_time
+                    df.at[idx, "followup_due_at"] = next_due  # Schedule Day 7 Soft Breakup
+                    sent_count += 1
+
+                # Follow-Up #2 (Day 7 Soft Breakup)
+                elif f_status in ["SENT_FOLLOWUP_1", "DRY_RUN_FOLLOWUP_1"]:
+                    subject = f"Re: {generate_email_subject(lead_name, service_needed)}"
+                    body = spin_text(generate_breakup_pitch(lead_name, service_needed))
+                    sent_time = now.strftime("%Y-%m-%d %H:%M")
+
+                    current_account = accounts[account_idx % len(accounts)] if accounts else {"email": "dryrun@domain.com"}
+                    account_idx += 1
+
+                    print(f"\n---> [{sent_count+1}/{limit}] Dispatching Follow-up #2 (Day 7 Soft Breakup):")
+                    print(f"     From:     {current_account['email']}")
+                    print(f"     To:       {lead_name} <{recipient_email}>")
+                    print(f"     Subject:  {subject}")
+
+                    if dry_run:
+                        print("     [DRY RUN - Follow-up #2 Soft Breakup not physically sent]")
+                    else:
+                        try:
+                            smtp_conn = connect_smtp_account(current_account)
+                            msg = MIMEMultipart()
+                            msg["From"] = f"{os.getenv('SENDER_NAME', 'Joel Adawah')} <{current_account['email']}>"
+                            msg["To"] = recipient_email
+                            msg["Subject"] = subject
+                            msg.attach(MIMEText(body, "plain"))
+                            smtp_conn.send_message(msg)
+                            smtp_conn.quit()
+
+                            delay = random.randint(15, 35)
+                            print(f"     [+] Success! Pausing {delay}s for humanized rate limiting...")
+                            time.sleep(delay)
+                        except Exception as send_err:
+                            print(f"     [-] Failed to send via {current_account['email']}: {send_err}")
+                            continue
+
+                    df.at[idx, "followup_status"] = "SEQUENCE_COMPLETE_DAY_7" if not dry_run else "DRY_RUN_SEQUENCE_COMPLETE"
+                    df.at[idx, "followup_sent_at"] = sent_time
+                    sent_count += 1
 
     df.to_csv(csv_path, index=False, encoding="utf-8")
     print(f"\n[+] Updated status tracking saved to local CSV: {csv_path}")
