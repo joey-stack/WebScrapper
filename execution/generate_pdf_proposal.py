@@ -153,16 +153,28 @@ def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> 
 
     strat_lines = [l.strip() for l in formatted_strat.split("\n") if l.strip()]
     for line in strat_lines:
-        if line.startswith("Core Strength Identified:"):
-            elements.append(Paragraph(f"<b>Core Strength:</b> {line.replace('Core Strength Identified:', '').strip()}", body_style))
+        # Strip organization name prefix if present at start of line
+        line = re.sub(rf"^{re.escape(org_name)}\s*", "", line, flags=re.IGNORECASE).strip()
+
+        if "Core Strength Identified:" in line or line.startswith("Core Strength:"):
+            content = line.split(":", 1)[-1].strip()
+            elements.append(Paragraph(f"• <b>Core Strength:</b> {content}", body_style))
             elements.append(Spacer(1, 2))
-        elif line.startswith("Primary Problem Identified:"):
-            elements.append(Paragraph(f"<b>Identified Growth Gap:</b> {line.replace('Primary Problem Identified:', '').strip()}", body_style))
+        elif "Primary Problem Identified:" in line or "Identified Growth Gap:" in line:
+            content = line.split(":", 1)[-1].strip()
+            elements.append(Paragraph(f"• <b>Identified Growth Gap:</b> {content}", body_style))
             elements.append(Spacer(1, 4))
-        elif re.match(r"^\d+\.\s+", line):
-            elements.append(Paragraph(f"<b>{line}</b>", ParagraphStyle("SubH", parent=body_style, fontName="Helvetica-Bold", textColor=colors.HexColor("#1e293b"), spaceBefore=4, spaceAfter=2)))
-        elif line.startswith("Step "):
-            elements.append(Paragraph(f"• <b>{line}</b>", ParagraphStyle("StepBullet", parent=body_style, leftIndent=10, spaceAfter=2)))
+        elif re.match(r"^\d+\.\s+", line) or line.startswith("Step "):
+            if ":" in line:
+                label_part, body_part = line.split(":", 1)
+                formatted_para = f"<b>{label_part.strip()}:</b> {body_part.strip()}"
+            else:
+                formatted_para = f"<b>{line}</b>"
+
+            if line.startswith("Step "):
+                elements.append(Paragraph(f"• {formatted_para}", ParagraphStyle("StepBullet", parent=body_style, leftIndent=10, spaceAfter=3)))
+            else:
+                elements.append(Paragraph(formatted_para, ParagraphStyle("SubH", parent=body_style, spaceBefore=4, spaceAfter=3)))
         else:
             elements.append(Paragraph(line, body_style))
             elements.append(Spacer(1, 3))
