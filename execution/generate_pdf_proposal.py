@@ -24,6 +24,14 @@ TMP_CSV = Path(__file__).parent.parent / ".tmp" / "gmb_leads_combined.csv"
 OUTPUT_DIR = Path(__file__).parent.parent / ".tmp" / "proposals"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+def clean_currency_str(val: str) -> str:
+    """Replaces unicode Naira symbol with clean NGN label for standard Helvetica PDF fonts."""
+    if not val:
+        return ""
+    val = str(val).replace("₦", "NGN ")
+    val = re.sub(r"\s+", " ", val).strip()
+    return val
+
 def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> Path:
     if not csv_path.exists():
         print(f"[-] Error: Leads CSV not found at {csv_path}")
@@ -41,11 +49,11 @@ def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> 
     org_name = str(row.get("name", "Organization"))
     service_needed = str(row.get("service_needed", "Website & Local Search Optimization"))
     price_class = str(row.get("price_class", "Tier 3: Enterprise Full-Stack"))
-    setup_fee = str(row.get("one_time_setup_fee", "₦450,000 NGN"))
-    monthly_fee = str(row.get("monthly_maintenance_fee", "₦35,000 NGN/mo"))
-    package_summary = str(row.get("recommended_price_ngn", "₦450,000 NGN"))
-    scope = str(row.get("service_scope_breakdown", ""))
-    strategy = str(row.get("conversion_strategy", ""))
+    setup_fee = clean_currency_str(str(row.get("one_time_setup_fee", "NGN 450,000")))
+    monthly_fee = clean_currency_str(str(row.get("monthly_maintenance_fee", "NGN 35,000/mo")))
+    package_summary = clean_currency_str(str(row.get("recommended_price_ngn", "NGN 450,000")))
+    scope = clean_currency_str(str(row.get("service_scope_breakdown", "")))
+    strategy = clean_currency_str(str(row.get("conversion_strategy", "")))
 
     sanitized_filename = re.sub(r"[^\w]+", "_", org_name.lower()).strip("_") + "_proposal.pdf"
     output_pdf_path = OUTPUT_DIR / sanitized_filename
@@ -129,8 +137,13 @@ def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> 
 
     # Strategy & Analogy Section
     elements.append(Paragraph("2. 5-Star Executive Conversion Strategy", h2_style))
-    clean_strat = strategy.replace("\n", "<br/>")
-    elements.append(Paragraph(clean_strat[:650] + "...", body_style))
+    
+    # Strip redundant title line and ASCII dash divider
+    strat_body = re.sub(r"^5-STAR EXECUTIVE CONVERSION STRATEGY FOR.*?\n", "", strategy, flags=re.IGNORECASE | re.MULTILINE)
+    strat_body = re.sub(r"5-STAR EXECUTIVE CONVERSION STRATEGY FOR [^\n•]+", "", strat_body, flags=re.IGNORECASE)
+    strat_body = re.sub(r"-{5,}", "", strat_body)
+    clean_strat = strat_body.strip().replace("\n", "<br/>")
+    elements.append(Paragraph(clean_strat, body_style))
     elements.append(Spacer(1, 8))
 
     # Itemized Scope Table
@@ -141,19 +154,46 @@ def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> 
 
     # Investment & Terms Table
     elements.append(Paragraph("4. Investment Summary & Payment Terms", h2_style))
-    table_data = [
+    
+    th_style = ParagraphStyle(
+        "THStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=8.5,
+        textColor=colors.whitesmoke
+    )
+    td_style = ParagraphStyle(
+        "TDStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor("#1e293b")
+    )
+
+    table_raw = [
         ["Fee Description", "Amount (NGN & USD)", "Payment Milestone"],
         ["Initial Onboarding & Build Setup", setup_fee, "50% Upon Acceptance"],
         ["Final Sign-Off & Launch Handover", package_summary, "50% Prior to Final Deployment"],
         ["Monthly Maintenance & Map Retainer", monthly_fee, "Monthly Starting Month 2"]
     ]
-    t = Table(table_data, colWidths=[200, 180, 160])
+
+    table_data = []
+    for r_idx, row_cells in enumerate(table_raw):
+        row_para = []
+        for cell in row_cells:
+            st = th_style if r_idx == 0 else td_style
+            row_para.append(Paragraph(str(cell), st))
+        table_data.append(row_para)
+
+    t = Table(table_data, colWidths=[150, 230, 160])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8.5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
     ]))
     elements.append(t)
