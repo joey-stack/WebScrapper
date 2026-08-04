@@ -136,21 +136,71 @@ def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> 
     elements.append(Spacer(1, 8))
 
     # Strategy & Analogy Section
-    elements.append(Paragraph("2. 5-Star Executive Conversion Strategy", h2_style))
+    elements.append(Paragraph("2. Executive Conversion Strategy & Roadmap", h2_style))
     
-    # Strip redundant title line and ASCII dash divider
-    strat_body = re.sub(r"^5-STAR EXECUTIVE CONVERSION STRATEGY FOR.*?\n", "", strategy, flags=re.IGNORECASE | re.MULTILINE)
-    strat_body = re.sub(r"5-STAR EXECUTIVE CONVERSION STRATEGY FOR [^\n•]+", "", strat_body, flags=re.IGNORECASE)
-    strat_body = re.sub(r"-{5,}", "", strat_body)
-    clean_strat = strat_body.strip().replace("\n", "<br/>")
-    elements.append(Paragraph(clean_strat, body_style))
-    elements.append(Spacer(1, 8))
+    raw_strat = strategy.replace("★", " Stars").replace("•", "").strip()
+    raw_strat = re.sub(r"^5-STAR EXECUTIVE CONVERSION STRATEGY FOR.*?\n?", "", raw_strat, flags=re.IGNORECASE)
+    raw_strat = re.sub(r"5-STAR EXECUTIVE CONVERSION STRATEGY FOR [^\n•]+", "", raw_strat, flags=re.IGNORECASE)
+    raw_strat = re.sub(r"-{5,}", "", raw_strat)
+
+    # Insert linebreaks before numbered sections and steps
+    formatted_strat = raw_strat
+    for marker in [
+        "1. THE REAL-WORLD ANALOGY", "2. OUR ACTIONABLE SOLUTION & TECHNICAL APPROACH",
+        "3. EXPECTED OUTCOME & TIMELINE", "Step 1", "Step 2", "Step 3", "Step 4"
+    ]:
+        formatted_strat = formatted_strat.replace(marker, f"\n{marker}")
+
+    strat_lines = [l.strip() for l in formatted_strat.split("\n") if l.strip()]
+    for line in strat_lines:
+        if line.startswith("Core Strength Identified:"):
+            elements.append(Paragraph(f"<b>Core Strength:</b> {line.replace('Core Strength Identified:', '').strip()}", body_style))
+            elements.append(Spacer(1, 2))
+        elif line.startswith("Primary Problem Identified:"):
+            elements.append(Paragraph(f"<b>Identified Growth Gap:</b> {line.replace('Primary Problem Identified:', '').strip()}", body_style))
+            elements.append(Spacer(1, 4))
+        elif re.match(r"^\d+\.\s+", line):
+            elements.append(Paragraph(f"<b>{line}</b>", ParagraphStyle("SubH", parent=body_style, fontName="Helvetica-Bold", textColor=colors.HexColor("#1e293b"), spaceBefore=4, spaceAfter=2)))
+        elif line.startswith("Step "):
+            elements.append(Paragraph(f"• <b>{line}</b>", ParagraphStyle("StepBullet", parent=body_style, leftIndent=10, spaceAfter=2)))
+        else:
+            elements.append(Paragraph(line, body_style))
+            elements.append(Spacer(1, 3))
+            
+    elements.append(Spacer(1, 6))
 
     # Itemized Scope Table
     elements.append(Paragraph("3. Itemized Scope of Deliverables", h2_style))
-    clean_scope = scope.replace("\n", "<br/>")
-    elements.append(Paragraph(clean_scope, body_style))
-    elements.append(Spacer(1, 10))
+    
+    bullet_style = ParagraphStyle(
+        "BulletStyle",
+        parent=body_style,
+        leftIndent=12,
+        firstLineIndent=-8,
+        spaceAfter=4
+    )
+
+    clean_scope = scope.replace("•", "").strip()
+    
+    # Split by DELIVERABLE if flattened
+    for d_num in range(1, 6):
+        clean_scope = clean_scope.replace(f"DELIVERABLE {d_num}:", f"\nDELIVERABLE {d_num}:")
+
+    scope_items = [item.strip() for item in clean_scope.split("\n") if item.strip()]
+
+    for item in scope_items:
+        if "DELIVERABLE" in item:
+            parts = item.split(":", 1)
+            if len(parts) == 2:
+                formatted_item = f"<b>{parts[0].strip()}:</b> {parts[1].strip()}"
+            else:
+                formatted_item = f"<b>{item}</b>"
+        else:
+            formatted_item = item
+
+        elements.append(Paragraph(f"• {formatted_item}", bullet_style))
+
+    elements.append(Spacer(1, 8))
 
     # Investment & Terms Table
     elements.append(Paragraph("4. Investment Summary & Payment Terms", h2_style))
