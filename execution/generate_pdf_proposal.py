@@ -274,9 +274,87 @@ def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> 
     print(f"    Path: {output_pdf_path}")
     return output_pdf_path
 
+def send_proposal_email(recipient_email: str, org_name: str, pdf_path: Path) -> bool:
+    """Dispatches the generated PDF proposal as an email attachment to the recipient."""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+
+    sender_email = os.getenv("SENDER_EMAIL", "").strip()
+    sender_password = os.getenv("SENDER_PASSWORD", "").strip()
+    sender_name = os.getenv("SENDER_NAME", "Joel Adawah").strip()
+    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+
+    if not sender_email or not sender_password:
+        print("[-] Error: SENDER_EMAIL or SENDER_PASSWORD missing in .env")
+        return False
+
+    msg = MIMEMultipart()
+    msg["From"] = f"{sender_name} <{sender_email}>"
+    msg["To"] = recipient_email
+    msg["Subject"] = f"Digital Elevation & Growth Proposal - {org_name}"
+
+    body_text = f"""Hi Team {org_name},
+
+Thank you for your interest in expanding {org_name}'s digital presence and Google search visibility!
+
+Attached is your official 1-page Digital Elevation & Growth Proposal prepared by {sender_name} & Team.
+
+This proposal outlines:
+• Selected Package Tier & Pricing Investment
+• 5-Star Executive Conversion Strategy & Roadmap
+• Itemized Scope of Deliverables (1-5)
+• Milestone Schedule & Payment Terms
+
+Please review the attached PDF document. Whenever you are ready to initiate Phase 1 Onboarding, simply reply to this email or connect with us directly on WhatsApp (+2348183292909).
+
+Warm regards,
+
+{sender_name}
+Digital Strategy & Growth Director
+"""
+    msg.attach(MIMEText(body_text, "plain"))
+
+    if pdf_path and pdf_path.exists():
+        with open(pdf_path, "rb") as f:
+            attach = MIMEApplication(f.read(), _subtype="pdf")
+            attach.add_header("Content-Disposition", "attachment", filename=pdf_path.name)
+            msg.attach(attach)
+
+    try:
+        smtp = smtplib.SMTP(smtp_server, smtp_port)
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.login(sender_email, sender_password)
+        smtp.sendmail(sender_email, [recipient_email], msg.as_string())
+        smtp.quit()
+        print(f"[+] SUCCESS! PDF Proposal emailed directly to {recipient_email}")
+        return True
+    except Exception as e:
+        print(f"[-] Failed to send proposal email: {e}")
+        return False
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="PDF Client Proposal Generator")
+    parser = argparse.ArgumentParser(description="PDF Client Proposal Generator & Auto-Emailer")
     parser.add_argument("--lead-name", type=str, required=True, help="Organization Name (e.g. 'Project 1000')")
+    parser.add_argument("--send-email", action="store_true", help="Automatically email PDF proposal to recipient")
+    parser.add_argument("--recipient-email", type=str, default="", help="Override recipient email address")
+
     args = parser.parse_args()
 
-    generate_pdf_proposal_for_lead(lead_name=args.lead_name)
+    pdf_file = generate_pdf_proposal_for_lead(lead_name=args.lead_name)
+    if args.send_email and pdf_file:
+        # Fetch lead email from dataset if not overridden
+        target_email = args.recipient_email
+        if not target_email and TMP_CSV.exists():
+            df = pd.read_csv(TMP_CSV)
+            matched = df[df["name"].astype(str).str.lower().str.contains(args.lead_name.lower())]
+            if not matched.empty:
+                target_email = str(matched.iloc[0].get("email", "")).strip()
+
+        if target_email and "@" in target_email:
+            send_proposal_email(recipient_email=target_email, org_name=args.lead_name, pdf_path=pdf_file)
+        else:
+            print(f"[-] Cannot auto-send email: No valid email address found for lead '{args.lead_name}'")

@@ -162,12 +162,14 @@ def track_incoming_replies(csv_path: Path, sheet_url: str = None, search_limit: 
             lead_name = df.at[idx, "name"]
             snippet = extract_email_body(msg)
 
-            # Keyword Analysis: Unsubscribe vs High Intent
+            # Keyword Analysis: Unsubscribe vs Proposal Request vs High Intent
             low_snippet = (subject_header + " " + snippet).lower()
             unsub_keywords = ["unsubscribe", "remove", "stop", "not interested", "do not contact", "take me off", "opt out", "dont contact", "don't contact"]
-            high_intent_keywords = ["proceed", "invoice", "account detail", "bank detail", "payment", "agreed", "let's do", "send proposal", "interested", "yes", "call"]
+            proposal_keywords = ["proposal", "quote", "pricing", "send info", "send deck", "scope", "cost", "breakdown", "details"]
+            high_intent_keywords = ["proceed", "invoice", "account detail", "bank detail", "payment", "agreed", "let's do", "yes", "call"]
 
             is_unsub = any(kw in low_snippet for kw in unsub_keywords)
+            is_proposal_req = any(kw in low_snippet for kw in proposal_keywords)
             is_ready_to_close = any(kw in low_snippet for kw in high_intent_keywords)
 
             if is_unsub:
@@ -185,7 +187,7 @@ def track_incoming_replies(csv_path: Path, sheet_url: str = None, search_limit: 
                 df.at[idx, "reply_status_notes"] = f"[UNSUBSCRIBED] Requested removal on {now_str}"
                 new_replies_count += 1
             else:
-                stage_tag = "🔥 HIGH INTENT / READY TO CLOSE" if is_ready_to_close else "CLIENT_REPLIED"
+                stage_tag = "🔥 HIGH INTENT / READY TO CLOSE" if is_ready_to_close else ("📄 PROPOSAL_REQUESTED" if is_proposal_req else "CLIENT_REPLIED")
                 print(f"\n[🎯 REPLY DETECTED!]")
                 print(f"     Lead:     {lead_name}")
                 print(f"     From:     {from_header}")
@@ -193,12 +195,25 @@ def track_incoming_replies(csv_path: Path, sheet_url: str = None, search_limit: 
                 print(f"     Stage:    {stage_tag}")
                 print(f"     Snippet:  {snippet[:120]}...")
 
+                # Auto-generate & Auto-Email PDF proposal if requested
+                if is_proposal_req:
+                    print(f"[*] AUTO-GENERATING & EMAILING PDF PROPOSAL FOR: {lead_name}...")
+                    try:
+                        from generate_pdf_proposal import generate_pdf_proposal_for_lead, send_proposal_email
+                        pdf_path = generate_pdf_proposal_for_lead(lead_name)
+                        if pdf_path:
+                            send_proposal_email(sender_email, lead_name, pdf_path)
+                            df.at[idx, "reply_status_notes"] = f"[PROPOSAL_AUTO_SENT] PDF proposal emailed to {sender_email} on {now_str}"
+                    except Exception as pe:
+                        print(f"[-] Failed auto-generating PDF proposal: {pe}")
+
                 df.at[idx, "client_replied"] = "YES"
                 df.at[idx, "email_sent_status"] = "CLIENT_REPLIED"
                 df.at[idx, "followup_status"] = "CANCELLED_CLIENT_REPLIED"
                 df.at[idx, "client_replied_at"] = now_str
                 df.at[idx, "latest_client_reply_snippet"] = snippet
-                df.at[idx, "reply_status_notes"] = f"[{stage_tag}] Replied on {now_str}: {subject_header}"
+                if not df.at[idx, "reply_status_notes"]:
+                    df.at[idx, "reply_status_notes"] = f"[{stage_tag}] Replied on {now_str}: {subject_header}"
                 new_replies_count += 1
 
     mail.logout()
