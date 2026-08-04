@@ -45,6 +45,13 @@ def parse_sender_accounts():
                 e, p = item.split(":", 1)
                 accounts.append({"email": e.strip(), "password": p.strip()})
     
+    # Check indexed variables SENDER_EMAIL_1..5
+    for i in range(1, 6):
+        e_var = os.getenv(f"SENDER_EMAIL_{i}", "").strip()
+        p_var = os.getenv(f"SENDER_PASSWORD_{i}", "").strip()
+        if e_var and p_var:
+            accounts.append({"email": e_var, "password": p_var})
+
     if not accounts:
         # Fallback to single account variables
         single_e = os.getenv("SENDER_EMAIL", "").strip()

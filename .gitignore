@@ -1,0 +1,19 @@
+# Environment variables and API credentials
+.env
+credentials.json
+token.json
+
+# Temporary files directory
+.tmp/
+
+# Python cache & virtual environment
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# OS specific files
+.DS_Store
+Thumbs.db
