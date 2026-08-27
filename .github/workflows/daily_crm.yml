@@ -1,0 +1,139 @@
+###############################################################################
+# GitHub Actions: Autonomous CRM Outreach & Conversion Cycle
+#
+# Runs the full pipeline automatically in the cloud:
+#   - 9:00 AM WAT (8:00 UTC) and 3:00 PM WAT (14:00 UTC), Monday–Friday
+#   - Manual trigger via "Run workflow" button in GitHub Actions tab
+#
+# Required GitHub Secrets (Settings > Secrets and variables > Actions):
+#   SENDER_EMAIL        - Gmail address (e.g. joeladawah2@gmail.com)
+#   SENDER_PASSWORD     - Gmail App Password (16-char)
+#   SENDER_NAME         - Display name for outreach emails
+#   MY_WHATSAPP_NUMBER  - WhatsApp number with country code
+#   GCP_CREDENTIALS_B64 - Base64-encoded credentials.json
+#                         Generate with: base64 -i credentials.json | pbcopy
+###############################################################################
+
+name: "🚀 Daily CRM Pipeline"
+
+on:
+  # Scheduled: 9AM WAT (08:00 UTC) and 3PM WAT (14:00 UTC), Mon–Fri
+  schedule:
+    - cron: "0 8 * * 1-5"
+    - cron: "0 14 * * 1-5"
+
+  # Manual trigger with configurable options
+  workflow_dispatch:
+    inputs:
+      email_limit:
+        description: "Max emails to send per batch"
+        required: false
+        default: "20"
+      dry_run:
+        description: "Dry run (no emails sent)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  run-crm-cycle:
+    name: "🔄 Autonomous CRM Cycle"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── Checkout Repository ──────────────────────────────────────────
+      - name: "📥 Checkout code"
+        uses: actions/checkout@v4
+
+      # ── Python Setup ─────────────────────────────────────────────────
+      - name: "🐍 Set up Python 3.11"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: "📦 Install dependencies"
+        run: pip install -r requirements.txt
+
+      # Playwright is listed in requirements but only needed for scraping
+      # Install browsers if playwright is available
+      - name: "🎭 Install Playwright browsers"
+        run: python -m playwright install chromium --with-deps || true
+
+      # ── Reconstruct Secrets ──────────────────────────────────────────
+      - name: "🔑 Reconstruct .env file"
+        run: |
+          cat > .env << 'EOF'
+          SMTP_SERVER=smtp.gmail.com
+          SMTP_PORT=587
+          SENDER_EMAIL=${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD=${{ secrets.SENDER_PASSWORD }}
+          SENDER_NAME=${{ secrets.SENDER_NAME }}
+          MY_WHATSAPP_NUMBER=${{ secrets.MY_WHATSAPP_NUMBER }}
+          EOF
+
+      - name: "🔑 Reconstruct credentials.json"
+        run: echo "${{ secrets.GCP_CREDENTIALS_B64 }}" | base64 --decode > credentials.json
+
+      # ── Bootstrap .tmp/ directory ────────────────────────────────────
+      - name: "📁 Create .tmp directory"
+        run: mkdir -p .tmp .tmp/proposals
+
+      # Download existing lead data from Google Sheet to bootstrap local CSV
+      - name: "📊 Bootstrap lead data from Google Sheet"
+        run: |
+          python3 -c "
+          import gspread, json, csv
+          from google.oauth2 import service_account
+
+          SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+          creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
+          client = gspread.authorize(creds)
+
+          SHEET_URL = 'https://docs.google.com/spreadsheets/d/1wGuXHelu2SqOUG2IQNMWG8gF08KqO_OcTb5rU1cziiU'
+          sheet = client.open_by_url(SHEET_URL)
+          ws = sheet.get_worksheet(0)
+          rows = ws.get_all_values()
+
+          if rows:
+              with open('.tmp/gmb_leads_combined.csv', 'w', newline='', encoding='utf-8') as f:
+                  writer = csv.writer(f)
+                  for row in rows:
+                      writer.writerow(row)
+              print(f'[+] Bootstrapped {len(rows)-1} leads from Google Sheet.')
+          else:
+              print('[!] No data found in Google Sheet. Starting fresh.')
+              open('.tmp/gmb_leads_combined.csv', 'w').close()
+          "
+
+      # ── Run the Full Autonomous CRM Cycle ────────────────────────────
+      - name: "🚀 Run Autonomous CRM Cycle"
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        run: |
+          EMAIL_LIMIT="${{ github.event.inputs.email_limit || '20' }}"
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+          python3 execution/run_autonomous_crm_cycle.py --limit "$EMAIL_LIMIT" $DRY_RUN_FLAG
+
+      # ── Summary ──────────────────────────────────────────────────────
+      - name: "📋 Pipeline Summary"
+        if: always()
+        run: |
+          echo "## 🚀 CRM Pipeline Run Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Trigger** | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Time (UTC)** | $(date -u '+%Y-%m-%d %H:%M:%S') |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Email Limit** | ${{ github.event.inputs.email_limit || '20' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Dry Run** | ${{ github.event.inputs.dry_run || 'false' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 [Live CRM Dashboard](https://docs.google.com/spreadsheets/d/1wGuXHelu2SqOUG2IQNMWG8gF08KqO_OcTb5rU1cziiU)" >> $GITHUB_STEP_SUMMARY

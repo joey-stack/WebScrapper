@@ -1,0 +1,50 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Binaries & Temporary standalone packages
+.bin/
+.tmp/*.zip
+.tmp/*.exe
+.tmp/wheels/
+.tmp/*.tmp_dl
+
+# Secrets & Private Environment Variables (DO NOT COMMIT)
+.env
+.env.local
+.env.*.local
+credentials.json
+token.json
+service_account.json
+*.pem
+*.key
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.pytest_cache/
+.coverage
+htmlcov/

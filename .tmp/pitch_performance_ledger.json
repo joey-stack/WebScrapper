@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-08-27 18:00",
+  "total_dispatches": 0,
+  "total_replies": 0,
+  "overall_reply_rate": 0.0,
+  "last_evolution_at": "2026-08-27 18:00",
+  "variants": {
+    "AUTHORITY_V1": {
+      "angle_name": "Authority & Institutional Verification",
+      "description": "Focuses on grant eligibility, donor due diligence, and verified organizational standing.",
+      "subject_templates": [
+        "Digital audit & verification readiness for {name}",
+        "Enhancing institutional credibility for {name}",
+        "Quick question regarding {name}'s verification profile in {location}"
+      ],
+      "pitch_template": "Hi Team {name},\n\nI came across {name}'s profile on Google Maps regarding your {highlight} in {location}.\n\n{improvement_note}\n\n{industry_proof}\n\nWe have prepared a concise, 1-page institutional digital roadmap specifically for {name} to resolve these gaps.\n\nWould you be open to reviewing this complimentary roadmap or having a brief 3-minute chat on WhatsApp (+{whatsapp_num})?",
+      "impressions_sent": 0,
+      "replies_received": 0,
+      "positive_replies": 0,
+      "unsubscribes": 0,
+      "reply_rate": 0.0,
+      "status": "ACTIVE",
+      "generation": 1
+    },
+    "COMPETITOR_V1": {
+      "angle_name": "Competitor Map Gap & Lost Search Inquiries",
+      "description": "Directly highlights local competitors capturing Top 3 Map Pack phone calls.",
+      "subject_templates": [
+        "{location} local search visibility gap for {name}",
+        "Where {name} is ranking on Google Maps in {location}",
+        "Local partner inquiry flow for {name}"
+      ],
+      "pitch_template": "Hi {name} Team,\n\nWhile searching for {clean_cat} organizations in {location}, I noticed {name} is currently listed at {rank_str}.\n\nBecause over 80% of local searchers never scroll past the Top 3 Map Pack, competing organizations in {location} are currently capturing the majority of inbound partner and donor calls.\n\n{improvement_note}\n\nWould you be open to seeing our 3-step action plan to move {name} into the Top 3 Google Map Pack?",
+      "impressions_sent": 0,
+      "replies_received": 0,
+      "positive_replies": 0,
+      "unsubscribes": 0,
+      "reply_rate": 0.0,
+      "status": "ACTIVE",
+      "generation": 1
+    },
+    "EXEC_SHORT_V1": {
+      "angle_name": "Ultra-Short Executive Hook (3-Sentence Frictionless)",
+      "description": "Hyper-concise message designed for rapid mobile reading and maximum response velocity.",
+      "subject_templates": [
+        "Quick note for {name}",
+        "Question for {name} leadership",
+        "1-page roadmap for {name}"
+      ],
+      "pitch_template": "Hi Team {name},\n\nI noticed your listing on Google Maps in {location} ({highlight}) is missing an official web portal and currently sits outside the primary search pack.\n\nWe mapped out a complimentary 1-page digital roadmap showing how similar {clean_cat} groups in {location} increase partner inquiries by 40%+.\n\nShould I send the 1-page PDF over here, or is WhatsApp (+{whatsapp_num}) better for you?",
+      "impressions_sent": 0,
+      "replies_received": 0,
+      "positive_replies": 0,
+      "unsubscribes": 0,
+      "reply_rate": 0.0,
+      "status": "ACTIVE",
+      "generation": 1
+    },
+    "GLASS_HQ_V1": {
+      "angle_name": "Digital Glass Headquarters Analogy",
+      "description": "Uses the intuitive 'empty plot of land vs modern glass office' analogy to make SEO and web design irresistible.",
+      "subject_templates": [
+        "Digital reception desk concept for {name}",
+        "Modern web presence overview for {name}",
+        "Strengthening {name}'s online headquarters in {location}"
+      ],
+      "pitch_template": "Hi Team {name},\n\nThink of your online presence like {name}'s 'Digital Headquarters' in {location}. Right now, when international partners look for you online, there is no official building\u2014just an empty field.\n\n{improvement_note}\n\n{industry_proof}\n\nWe put together a visual concept for a modern, mobile-first web portal for {name}.\n\nWould you be open to taking a look at the complimentary concept?",
+      "impressions_sent": 0,
+      "replies_received": 0,
+      "positive_replies": 0,
+      "unsubscribes": 0,
+      "reply_rate": 0.0,
+      "status": "ACTIVE",
+      "generation": 1
+    }
+  }
+}
