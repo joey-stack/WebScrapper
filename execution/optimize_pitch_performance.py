@@ -112,6 +112,29 @@ BASE_VARIANTS = {
         "reply_rate": 0.0,
         "status": "ACTIVE",
         "generation": 1
+    },
+    "GEO_AI_SEARCH_V1": {
+        "angle_name": "AI Search Engine (GEO) & ChatGPT Invisibility",
+        "description": "Highlights that ChatGPT and Google Gemini AI Overviews omit their business due to missing Schema structured data.",
+        "subject_templates": [
+            "AI search visibility & Google Overview indexing for {name}",
+            "Where {name} appears in Google AI & ChatGPT local searches",
+            "Generative search citation gap for {name} in {location}"
+        ],
+        "pitch_template": (
+            "Hi {name} Team,\n\n"
+            "When corporate partners and prospective clients in {location} use Google Gemini AI Overviews or ChatGPT to find top {clean_cat} organizations, {name} is currently omitted from AI citations because your profile lacks structured JSON-LD entity schema.\n\n"
+            "{improvement_note}\n\n"
+            "We prepared a complimentary 1-page Generative Engine Optimization (GEO) roadmap showing how to get {name} indexed and cited in both Google Maps Top 3 and AI Search Overviews.\n\n"
+            "Would you be open to reviewing the 1-page roadmap?"
+        ),
+        "impressions_sent": 0,
+        "replies_received": 0,
+        "positive_replies": 0,
+        "unsubscribes": 0,
+        "reply_rate": 0.0,
+        "status": "ACTIVE",
+        "generation": 1
     }
 }
 

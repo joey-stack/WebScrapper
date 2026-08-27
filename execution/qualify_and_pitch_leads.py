@@ -610,26 +610,26 @@ def generate_service_scope_breakdown(service_needed: str) -> str:
     """Returns an itemized breakdown of deliverables included in the service package."""
     if service_needed == "Website Design Only":
         return (
-            "• DELIVERABLE 1: Custom Mobile-Responsive Web Portal (Loads < 2s)\n"
-            "• DELIVERABLE 2: Audited Impact Reports & Program Leadership Pages\n"
+            "• DELIVERABLE 1: Custom Mobile-Responsive Web Portal (Loads < 2s on Nigerian Networks)\n"
+            "• DELIVERABLE 2: Audited Impact Reports & Program Leadership Pages (Due Diligence Ready)\n"
             "• DELIVERABLE 3: Automated Partner & Donor Intake Form with Instant Receipts\n"
             "• DELIVERABLE 4: Multi-Currency Payment Gateway Setup (NGN, USD, EUR)\n"
-            "• DELIVERABLE 5: SSL Security, 1-Year Domain/Hosting Config, & Basic Schema"
+            "• DELIVERABLE 5: SSL Security, 1-Year Domain/Hosting, & AI GEO Schema + Google AI Overview Content Capsule"
         )
     elif service_needed == "GMB SEO Optimization Only":
         return (
             "• DELIVERABLE 1: GMB Verification & NAP Standardization across 30+ Nigerian Directories\n"
             "• DELIVERABLE 2: Primary & Secondary Category Tuning + High-Intent Keyword Injection\n"
             "• DELIVERABLE 3: 20+ Geotagged Project & Impact Media Uploads\n"
-            "• DELIVERABLE 4: Automated FTC-Compliant Customer Review Request Workflow\n"
-            "• DELIVERABLE 5: Monthly Map Pack Rank Tracking & Performance Reports (3-6 Months)"
+            "• DELIVERABLE 4: Google Rich Results & LocalBusiness JSON-LD Schema Integration\n"
+            "• DELIVERABLE 5: Review Velocity Engine, Owner Reply Matrix & Top 3 Map Pack Rank Tracking"
         )
     elif service_needed == "Both (Website + GMB SEO)":
         return (
             "• DELIVERABLE 1: Full-Stack Web Portal + Google Business Profile Location Signal Sync\n"
             "• DELIVERABLE 2: High-Converting Mobile Website + Automated Donor Intake Funnel\n"
             "• DELIVERABLE 3: Top 3 Map Pack Optimization & 30+ Nigerian Directory Citation Submissions\n"
-            "• DELIVERABLE 4: GEO JSON-LD Schema Markup for AI Search (ChatGPT, Gemini, Perplexity)\n"
+            "• DELIVERABLE 4: Generative Engine Optimization (GEO) & ChatGPT/Gemini Knowledge Graph Indexing\n"
             "• DELIVERABLE 5: 6 Months Active Reputation Management & Monthly Conversion Analytics"
         )
     else:
