@@ -69,6 +69,23 @@ def run_tests():
     print(f"Zero Reviews Improvement: '{improvement_zero}'")
     assert "0 public customer reviews" in improvement_zero
 
+    # Test 2.5: Reviews Exist with Unanswered Owner Replies
+    lead_unanswered = {
+        "name": "Abuja Premier Academy",
+        "category": "Educational institution",
+        "address": "Wuse 2, Abuja",
+        "website": "https://abujapremier.edu.ng",
+        "phone": "08033334444",
+        "rating": "4.2",
+        "reviews_count": 8,
+        "owner_replies_found": 0,
+        "owner_reply_status": "Unanswered Reviews",
+        "search_rank_position": 14
+    }
+    improvement_unanswered = generate_improvement_area(lead_unanswered)
+    print(f"Unanswered Reviews Improvement: '{improvement_unanswered}'")
+    assert "owner responses" in improvement_unanswered, "Expected owner responses note in improvement area"
+
     # Test 3: Industry Case Study Proof Injection
     print("\n--- TEST 3: Industry Proof Point Injection ---")
     proof_ngo = generate_industry_proof_point("Non-profit organization", "Abuja")

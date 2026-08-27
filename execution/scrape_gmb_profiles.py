@@ -266,6 +266,35 @@ async def extract_gmb_listing_details(page, index: int, card_element) -> dict:
                 if href:
                     data["website"] = href.strip()
 
+        # Check for Customer Reviews & Owner Responses in the detail side panel
+        try:
+            review_cards = await page.query_selector_all("div.jftiEf, div[data-review-id], div.WNxFfe, div.MyEned")
+            owner_replies = 0
+            snippets = []
+
+            for r_card in review_cards[:5]:
+                r_text = await r_card.inner_text()
+                if "response from the owner" in r_text.lower() or "response from owner" in r_text.lower() or "owner response" in r_text.lower():
+                    owner_replies += 1
+                
+                clean_t = re.sub(r"\s+", " ", r_text).strip()
+                if len(clean_t) > 20 and not snippets:
+                    snippets.append(clean_t[:120])
+
+            data["owner_replies_found"] = owner_replies
+            if snippets:
+                data["sample_review_snippet"] = snippets[0]
+
+            rc_int = int(data["reviews_count"]) if data["reviews_count"] and data["reviews_count"].isdigit() else 0
+            if rc_int == 0:
+                data["owner_reply_status"] = "Zero Reviews (Needs Social Proof)"
+            elif owner_replies > 0:
+                data["owner_reply_status"] = f"Active Owner Replies ({owner_replies} observed)"
+            else:
+                data["owner_reply_status"] = "Unanswered Reviews (0 Owner Replies Detected)"
+        except Exception:
+            data["owner_reply_status"] = "Zero Reviews (Needs Social Proof)" if has_no_reviews else "Unanswered Reviews"
+
     except Exception as err:
         print(f"   [-] Error extracting card details #{index+1}: {err}")
 

@@ -400,9 +400,14 @@ def generate_improvement_area(row: dict) -> str:
     if not has_website:
         deficiencies.append("your profile does not link to an official website, making it difficult for prospective partners and donors to verify your programs, leadership, or audited impact disclosures")
         
-    # 2. Reviews Social Proof
+    # 2. Reviews Social Proof & Owner Reply Management (Trust Engine)
+    owner_replies = int(row.get("owner_replies_found", 0) or 0)
+    reply_status = str(row.get("owner_reply_status", "") or "").lower()
+
     if reviews_count == 0:
         deficiencies.append("your Google Business Profile currently has 0 public customer reviews, leaving prospective clients with no immediate social proof of your track record")
+    elif "unanswered" in reply_status or owner_replies == 0:
+        deficiencies.append(f"your Google Business Profile has {reviews_count} customer reviews, but your team has not published owner responses to acknowledge client feedback (which search algorithms and institutional donors look for when assessing active customer care)")
     elif reviews_count < 5:
         deficiencies.append(f"your profile currently has only {reviews_count} public review{'s' if reviews_count > 1 else ''}, which gives competing organizations with 20+ reviews a decisive advantage in local search clicks")
 
@@ -819,7 +824,7 @@ def process_and_qualify_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         "email_sent_status", "sender_account_used", "initial_email_sent_at", 
         "followup_due_at", "followup_sent_at", "followup_status", "directed_proposal_email", 
         "client_replied", "client_replied_at", "reply_status_notes", "latest_client_reply_snippet",
-        "phone", "email", "website", "address", "rating", "reviews_count", "category", "google_maps_url"
+        "phone", "email", "website", "address", "rating", "reviews_count", "owner_replies_found", "owner_reply_status", "category", "google_maps_url"
     ]
     
     existing_cols = [c for c in column_order if c in df_filtered.columns]
