@@ -259,7 +259,13 @@ def generate_pdf_proposal_for_lead(lead_name: str, csv_path: Path = TMP_CSV) -> 
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
     ]))
     elements.append(t)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 8))
+
+    elements.append(Paragraph(
+        "<b>Value & Delivery Commitment:</b> All fees reflect dedicated custom engineering, rigorous mobile speed optimization, and institutional compliance standards. Every deliverable is structured to provide immediate return on investment by capturing high-intent searchers and establishing institutional verification.",
+        ParagraphStyle("ValueNote", parent=body_style, fontSize=7.5, leading=9.5, textColor=colors.HexColor("#475569"))
+    ))
+    elements.append(Spacer(1, 10))
 
     # Acceptance Signature Line
     elements.append(Paragraph("<b>Acceptance & Authorization:</b> Sign below to accept this proposal and initiate Phase 1 Onboarding.", body_style))
