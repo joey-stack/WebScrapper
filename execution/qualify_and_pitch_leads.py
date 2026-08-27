@@ -576,35 +576,35 @@ def generate_price_class(service_needed: str) -> str:
 def generate_one_time_setup_fee(service_needed: str) -> str:
     """Returns the one-time project setup & build fee."""
     if service_needed == "Website Design Only":
-        return "₦450,000 NGN ($320 USD) One-Time Build"
+        return "₦450,000 NGN ($300 USD) One-Time Build"
     elif service_needed == "GMB SEO Optimization Only":
-        return "₦250,000 NGN ($180 USD) One-Time Setup"
+        return "₦250,000 NGN ($170 USD) One-Time Setup"
     elif service_needed == "Both (Website + GMB SEO)":
-        return "₦600,000 NGN ($420 USD) One-Time Setup"
+        return "₦600,000 NGN ($400 USD) One-Time Setup"
     else:
-        return "₦60,000 NGN ($40 USD) Onboarding Audit"
+        return "₦80,000 NGN ($55 USD) Comprehensive Audit"
 
 def generate_monthly_maintenance_fee(service_needed: str) -> str:
-    """Returns the ongoing monthly/quarterly maintenance fee where applicable."""
+    """Returns the ongoing monthly/quarterly maintenance fee with quarterly discount."""
     if service_needed == "Website Design Only":
-        return "₦25,000 NGN/month ($18 USD/mo) Optional Hosting & Security"
+        return "₦35,000 NGN/mo (or ₦95,000/quarter) Cloud Security & Uptime Care"
     elif service_needed == "GMB SEO Optimization Only":
-        return "₦35,000 NGN/month ($25 USD/mo) Map Rank & Review Maintenance"
+        return "₦45,000 NGN/mo (or ₦120,000/quarter) Top 3 Map Rank & Review Management"
     elif service_needed == "Both (Website + GMB SEO)":
-        return "₦50,000 NGN/month ($35 USD/mo) Full Authority & AI Search Indexing"
+        return "₦65,000 NGN/mo (or ₦175,000/quarter) Full Authority Growth & AI Search Retainer"
     else:
-        return "₦40,000 NGN/month ($30 USD/mo) Full Retainer"
+        return "₦50,000 NGN/mo (or ₦135,000/quarter) Dedicated Maintenance"
 
 def generate_price_recommendation(service_needed: str) -> str:
     """Returns realistic obtainable pricing in Nigerian Naira (NGN) for agency services in Nigeria."""
     if service_needed == "Website Design Only":
-        return "₦450,000 Setup (Optional ₦25,000/mo maintenance)"
+        return "₦450,000 Setup (Optional ₦35k/mo or ₦95k/qtr Care)"
     elif service_needed == "GMB SEO Optimization Only":
-        return "₦350,000 NGN (₦250k Setup + 3 Months Retainer)"
+        return "₦370,000 NGN (₦250k Setup + ₦120k/Quarterly Retainer)"
     elif service_needed == "Both (Website + GMB SEO)":
-        return "₦750,000 NGN (₦600k Setup + 3 Months Full Maintenance)"
+        return "₦775,000 NGN (₦600k Setup + ₦175k/Quarterly Retainer)"
     else:
-        return "₦180,000 NGN (Quarterly Maintenance Retainer)"
+        return "₦135,000 NGN (Quarterly Maintenance Retainer)"
 
 def generate_service_scope_breakdown(service_needed: str) -> str:
     """Returns an itemized breakdown of deliverables included in the service package."""
