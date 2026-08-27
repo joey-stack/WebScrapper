@@ -517,6 +517,11 @@ def generate_variant_pitch_and_subject(row: dict, service_needed: str, highlight
     industry_proof = generate_industry_proof_point(category, location)
     whatsapp_num = os.getenv("MY_WHATSAPP_NUMBER", "2348183292909")
 
+    # Extract or fallback top competitor name
+    top_competitor = str(row.get("top_competitor_name", "") or "").strip()
+    if not top_competitor or top_competitor.lower() == clean_name.lower() or "top 3" in top_competitor.lower():
+        top_competitor = f"competing {clean_cat} groups in {location}"
+
     # Format subject template
     subjects = vdata.get("subject_templates", [
         "Digital audit & verification readiness for {name}",
@@ -528,7 +533,8 @@ def generate_variant_pitch_and_subject(row: dict, service_needed: str, highlight
         name=clean_name,
         location=location,
         category=clean_cat,
-        rank_str=rank_str
+        rank_str=rank_str,
+        top_competitor=top_competitor
     )
 
     # Format pitch template
@@ -540,6 +546,7 @@ def generate_variant_pitch_and_subject(row: dict, service_needed: str, highlight
             highlight=highlight,
             clean_cat=clean_cat,
             rank_str=rank_str,
+            top_competitor=top_competitor,
             improvement_note=improvement_note,
             industry_proof=industry_proof,
             whatsapp_num=whatsapp_num
@@ -804,7 +811,7 @@ def process_and_qualify_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     # Column ordering for master Google Sheet
     column_order = [
-        "name", "icp_score", "priority_tier", "current_google_search_rank", "search_rank_position", "service_needed", 
+        "name", "icp_score", "priority_tier", "current_google_search_rank", "search_rank_position", "top_competitor_name", "service_needed", 
         "price_class", "one_time_setup_fee", "monthly_maintenance_fee", "recommended_price_ngn", 
         "pitch_variant_id", "email_subject",
         "whatsapp_chat_link", "whatsapp_outreach_copy", "service_scope_breakdown", "profile_highlight", 

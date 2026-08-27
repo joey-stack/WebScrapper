@@ -397,6 +397,17 @@ async def scrape_gmb_query(playwright, query: str, max_results: int = 50, headle
             print(f"     Website: {listing_data['website'] or 'N/A'}")
             print(f"     Email:   {listing_data['email'] or 'N/A'}")
 
+    # Inject Top #1 Competitor Name into all listings for hyper-targeted psychological outreach
+    if results:
+        lead_0_name = results[0].get("name", "").strip()
+        lead_1_name = results[1].get("name", "").strip() if len(results) > 1 else "the Top 3 search pack leaders"
+        
+        for idx, item in enumerate(results):
+            if idx == 0:
+                item["top_competitor_name"] = lead_1_name
+            else:
+                item["top_competitor_name"] = lead_0_name
+
     await browser.close()
     return results
 

@@ -48,16 +48,16 @@ BASE_VARIANTS = {
         "angle_name": "Competitor Map Gap & Lost Search Inquiries",
         "description": "Directly highlights local competitors capturing Top 3 Map Pack phone calls.",
         "subject_templates": [
-            "{location} local search visibility gap for {name}",
+            "{location} search visibility gap for {name} vs {top_competitor}",
             "Where {name} is ranking on Google Maps in {location}",
             "Local partner inquiry flow for {name}"
         ],
         "pitch_template": (
             "Hi {name} Team,\n\n"
-            "While searching for {clean_cat} organizations in {location}, I noticed {name} is currently listed at {rank_str}.\n\n"
-            "Because over 80% of local searchers never scroll past the Top 3 Map Pack, competing organizations in {location} are currently capturing the majority of inbound partner and donor calls.\n\n"
+            "While searching for {clean_cat} organizations in {location}, I noticed {name} is currently listed at {rank_str}, while competing organizations like {top_competitor} hold the Top 3 Map Pack.\n\n"
+            "Because over 80% of local searchers never scroll past the Top 3, {top_competitor} is currently capturing the majority of inbound partner calls and client inquiries in {location}.\n\n"
             "{improvement_note}\n\n"
-            "Would you be open to seeing our 3-step action plan to move {name} into the Top 3 Google Map Pack?"
+            "Would you be open to seeing our 3-step action plan to move {name} ahead of {top_competitor} in the Google Map Pack?"
         ),
         "impressions_sent": 0,
         "replies_received": 0,
