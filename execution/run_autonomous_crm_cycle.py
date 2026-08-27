@@ -24,6 +24,7 @@ load_dotenv()
 sys.path.insert(0, str(Path(__file__).parent))
 
 from send_outreach_emails import process_email_outreach
+from follow_up_engine import dispatch_smart_followups
 from track_email_responses import track_incoming_replies
 from manage_crm_engine import init_crm_worksheets, sync_replies_to_active_deals, onboard_closed_won_projects
 from scrape_daily_leads import scrape_and_append_daily_leads
@@ -59,11 +60,11 @@ def run_full_autonomous_cycle(sheet_url: str = DEFAULT_SHEET_URL, email_limit: i
     except Exception as e:
         print(f"[-] Step 1.5 Warning: {e}")
 
-    # 2. Dispatch Outbound Emails (Initial & Follow-ups)
-    print("\n--- STEP 2: DISPATCHING OUTBOUND OUTREACH EMAILS ---")
+    # 2. Dispatch Outbound Emails (Initial & Multi-Touch Smart Follow-ups)
+    print("\n--- STEP 2: DISPATCHING OUTBOUND OUTREACH & SMART FOLLOW-UPS ---")
     try:
         process_email_outreach(csv_path=TMP_CSV, mode="initial", sheet_url=sheet_url, limit=email_limit, dry_run=dry_run)
-        process_email_outreach(csv_path=TMP_CSV, mode="followup", sheet_url=sheet_url, limit=email_limit, dry_run=dry_run)
+        dispatch_smart_followups(csv_path=TMP_CSV, sheet_url=sheet_url, limit=email_limit, dry_run=dry_run)
     except Exception as e:
         print(f"[-] Step 2 Error: {e}")
 
