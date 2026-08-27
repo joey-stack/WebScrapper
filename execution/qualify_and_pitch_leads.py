@@ -407,7 +407,7 @@ def generate_improvement_area(row: dict) -> str:
     if reviews_count == 0:
         deficiencies.append("your Google Business Profile currently has 0 public customer reviews, leaving prospective clients with no immediate social proof of your track record")
     elif "unanswered" in reply_status or owner_replies == 0:
-        deficiencies.append(f"your Google Business Profile has {reviews_count} customer reviews, but your team has not published owner responses to acknowledge client feedback (which search algorithms and institutional donors look for when assessing active customer care)")
+        deficiencies.append(f"your Google Business Profile has {reviews_count} customer reviews, but your team has not published owner responses to client feedback. In Google's local algorithm, active review replies are a core ranking signal that elevates profiles into the Top 3 Map Pack")
     elif reviews_count < 5:
         deficiencies.append(f"your profile currently has only {reviews_count} public review{'s' if reviews_count > 1 else ''}, which gives competing organizations with 20+ reviews a decisive advantage in local search clicks")
 

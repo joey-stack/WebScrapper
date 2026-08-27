@@ -84,7 +84,7 @@ def run_tests():
     }
     improvement_unanswered = generate_improvement_area(lead_unanswered)
     print(f"Unanswered Reviews Improvement: '{improvement_unanswered}'")
-    assert "owner responses" in improvement_unanswered, "Expected owner responses note in improvement area"
+    assert "ranking signal" in improvement_unanswered, "Expected ranking signal note in improvement area"
 
     # Test 3: Industry Case Study Proof Injection
     print("\n--- TEST 3: Industry Proof Point Injection ---")
